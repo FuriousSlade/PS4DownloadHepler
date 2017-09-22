@@ -9,6 +9,8 @@ import StringIO
 import re
 import os
 import logging
+import getpass
+
 
 BUFFER_SIZE = 8192
 
@@ -95,6 +97,9 @@ class Forward(object):
             if i.split(' ')[0] == 'Content-Length:':
                 self.content_length = int(i.split(' ')[1])
 
+    def get_download_dir(self):
+        return '/Users/{}/Downloads'.format(getpass.getuser())
+
     def do_work(self):
         while self.time >= 0:
             inputready, _, _ = select.select(self.inputs, [], [])
@@ -104,8 +109,14 @@ class Forward(object):
                     if self.time == 0:
                         self.get_header_info()
                         if self.is_download_pkg():
-                            logging.info('Download url: ', self.header_info['uri'])
-                            f = DownloadHook('download/{}'.format(self.pkg_name))
+                            logging.info('Download url: {}'.format(self.header_info['uri']))
+                            try:
+                                f = DownloadHook('{}/{}'.format(self.get_download_dir(), self.pkg_name))
+                            except IOError as e:
+                                logging.error(e)
+                                self.inputs.remove(self.s)
+                                self.s.close()
+                                break
                             self.inputs.append(f)
                             self.channel = {
                                 self.s: f,
