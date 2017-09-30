@@ -93,10 +93,10 @@ class MyWin(wx.Frame):
         url = self.msg
         urls = '{}'.format(url)
         _url = url.split('.pkg')[0]
-        no = int(_url[-2])
+        no = int(_url[-2:])
         for i in xrange(1, 10):
             next_url = '{}{:0>2d}.pkg'.format(_url[:-2], no + i)
-            resp = requests.head(next_url, timeout=5)
+            resp = requests.head(next_url, timeout=10)
             if resp.status_code == 200:
                 urls += '\r\n{}'.format(next_url)
             else:
@@ -106,6 +106,7 @@ class MyWin(wx.Frame):
     def on_clicked(self, event):
         if self.msg != '':
             self.btn1.Enable(False)
+            self.tc2.SetValue('查询中请稍后。。。。。。_(:з」∠)_')
             startWorker(self._resultConsumer, self._resultProducer, jobID=self.job_id)
 
     def _resultConsumer(self, delayedResult):
