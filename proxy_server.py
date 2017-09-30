@@ -1,20 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import gevent.monkey; gevent.monkey.patch_all()
 from gevent.server import StreamServer
 from gevent import socket
 from gevent import select
+from gevent import os
 import gevent
 import StringIO
 import re
-import os
 import logging
 import getpass
+import multiprocessing
+import errno
 
-
+IP = '0.0.0.0'
+PORT = 8888
 BUFFER_SIZE = 8192
 
 logging.basicConfig(level=logging.INFO)
+
+q = multiprocessing.Queue()
 
 
 class DownloadHook(file):
@@ -111,7 +115,12 @@ class Forward(object):
                         if self.is_download_pkg():
                             logging.info('Download url: {}'.format(self.header_info['uri']))
                             try:
+                                q.put('{}'.format(self.header_info['uri']), block=False)
+                            except Exception as e:
+                                logging.error(e)
+                            try:
                                 f = DownloadHook('{}/{}'.format(self.get_download_dir(), self.pkg_name))
+                                q.put([200, "Upload {}".format(self.pkg_name)], block=False)
                             except IOError as e:
                                 logging.error(e)
                                 self.inputs.remove(self.s)
@@ -171,15 +180,27 @@ def handle(sock, address):
     logging.info('New connection from %s:%s' % address)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
     forwarder = Forward(sock)
-    gevent.spawn(forwarder.do_work)
+    gevent.joinall([gevent.spawn(forwarder.do_work)])
 
 
-def main():
-    ip = '0.0.0.0'
-    port = 8888
-    server = StreamServer((ip, port), handle)
-    logging.info('Starting proxy server on {} port {}'.format(ip, port))
-    server.serve_forever()
+class ServerManager(object):
+    def __init__(self, ip=IP, port=PORT):
+        super(ServerManager, self).__init__()
+        self.ip = ip
+        self.port = port
+        self.server = StreamServer((self.ip, self.port), handle)
+
+    def start(self):
+        logging.info('Starting proxy server on {} port {}.'.format(self.ip, self.port))
+        try:
+            self.server.serve_forever()
+        except KeyboardInterrupt as e:
+            logging.info('Proxy server stop.')
+        except Exception as e:
+            q.put(48, block=False)
+            pass
+
 
 if __name__ == '__main__':
-    main()
+    server = ServerManager()
+    server.start()

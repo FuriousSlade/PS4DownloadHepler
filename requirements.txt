@@ -1,2 +1,15 @@
-gevent (1.2.2)
-greenlet (0.4.12)
+altgraph==0.14
+certifi==2017.7.27.1
+chardet==3.0.4
+dis3==0.1.1
+future==0.16.0
+gevent==1.2.2
+greenlet==0.4.12
+idna==2.6
+macholib==1.8
+pefile==2017.9.3
+PyInstaller==3.3
+requests==2.18.4
+six==1.11.0
+urllib3==1.22
+wxPython==4.0.0b2
