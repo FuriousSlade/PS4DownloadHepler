@@ -68,10 +68,14 @@ class Forward(object):
 
     def get_header_info(self):
         header = self.data.split('\r\n\r\n')[0]
+        header_list = header.split('\r\n')
         method = header.split('\r\n')[0].split(' ')[0]
         uri = header.split('\r\n')[0].split(' ')[1]
         m = re.search(r'Host: (.*?)\r\n', header)
-        host = m.groups()[0]
+        for i in header_list:
+            if i.split(': ')[0] == 'Host':
+                host = i.split(': ')[1]
+                break
         port = 80
         if len(host.split(':')) > 1:
             host, port = host.split(':')[0], int(host.split(':')[1])
@@ -116,6 +120,7 @@ class Forward(object):
                             logging.info('Download url: {}'.format(self.header_info['uri']))
                             try:
                                 q.put('{}'.format(self.header_info['uri']), block=False)
+                                pass
                             except Exception as e:
                                 logging.error(e)
                             try:
