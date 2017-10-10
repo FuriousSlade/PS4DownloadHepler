@@ -34,8 +34,8 @@ class TaskBarIcon(TaskBarIcon):
 class MyWin(wx.Frame):
 
     def __init__(self, parent, title):
-        super(MyWin, self).__init__(parent, title=title, size=(800, 600))
-        self.SetMinSize((800, 600))
+        super(MyWin, self).__init__(parent, title=title, size=(800, 200))
+        self.SetMinSize((800, 200))
         self.msg = ''
         self.init_ui()
         self.Centre()
@@ -56,27 +56,16 @@ class MyWin(wx.Frame):
         download_url.SetFont(font)
         sizer.Add(download_url, pos=(0, 0), flag=wx.ALL, border=10)
 
-        all_download_url = wx.StaticText(panel, label="所有需要下载的文件:")
-        all_download_url.SetFont(font)
-        sizer.Add(all_download_url, pos=(1, 0), flag=wx.ALL, border=10)
-
-        self.tc1 = wx.TextCtrl(panel, size=(200, 100), style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.tc1 = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
         sizer.Add(self.tc1, pos=(0, 1), flag=wx.EXPAND | wx.ALL, border=5)
 
-        self.tc2 = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        sizer.Add(self.tc2, pos=(1, 1), flag=wx.EXPAND | wx.ALL, border=5)
-
         sizer.AddGrowableCol(1)
-        sizer.AddGrowableRow(1)
+        sizer.AddGrowableRow(0)
 
-        self.btn1 = wx.Button(panel, -1, '\r获取所有游戏文件下载地址\r')
-        self.btn1.SetFont(font)
-        self.btn1.Bind(wx.EVT_BUTTON, self.on_clicked)
-        sizer.Add(self.btn1, pos=(0, 2), flag=wx.ALL | wx.ALIGN_CENTER, border=5)
         panel.SetSizerAndFit(sizer)
 
         hint_msg = wx.StaticText(panel, size=(200, 100), label="提示:\r通过第三方下载工具将文件下载至\r/Users/{}/Downloads".format(getpass.getuser()))
-        sizer.Add(hint_msg, pos=(1, 2), flag=wx.ALL, border=5)
+        sizer.Add(hint_msg, pos=(0, 2), flag=wx.ALL, border=5)
 
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_timer, self.timer)
